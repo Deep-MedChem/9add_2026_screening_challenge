@@ -81,6 +81,12 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--dpi", type=int, default=250, help="Output DPI for generated plots.")
     p.add_argument("--perplexity", type=float, default=50.0, help="t-SNE perplexity (default: 50).")
     p.add_argument("--seed", type=int, default=920261, help="Random seed for t-SNE (default: 920261).")
+    p.add_argument(
+        "--lgbm-consensus-txt",
+        type=str,
+        default="9add_2026_screening_challenge/submissions/lgbm_cheese_consensus.txt",
+        help="Path to ID list to highlight (LGBM CHEESE consensus).",
+    )
 
     # SDF export
     p.add_argument(
@@ -268,6 +274,17 @@ def _morgan_fingerprints_from_smiles(smiles: np.ndarray, radius: int, nbits: int
     return fps
 
 
+def _mask_for_highlights(blind_ids: np.ndarray, highlight_ids: list[str], *, label: str) -> np.ndarray:
+    if not highlight_ids:
+        return np.zeros(blind_ids.shape[0], dtype=bool)
+    highlight_set = set(highlight_ids)
+    mask = np.isin(blind_ids, np.asarray(list(highlight_set), dtype=object))
+    missing = [cid for cid in highlight_ids if cid not in set(blind_ids.tolist())]
+    if missing:
+        print(f"WARNING: {label}: {len(missing)} highlight IDs not found in blind IDs: first few: {missing[:10]}")
+    return mask
+
+
 def _export_sdf_subset(*, sdf_in: Path, ordered_ids: list[str], out_sdf: Path) -> None:
     try:
         from rdkit import Chem
@@ -340,6 +357,40 @@ def main() -> int:
         dpi=int(args.dpi),
     )
     print(f"Wrote: {overlay_png}")
+
+    # (extra) LGBM consensus overlays (CHEESE ESPSIM t-SNE + Morgan t-SNE)
+    lgbm_ids: list[str] = []
+    lgbm_path = Path(args.lgbm_consensus_txt)
+    if lgbm_path.exists():
+        lgbm_ids = _read_id_list(lgbm_path)
+    else:
+        print(f"WARNING: {lgbm_path} not found; skipping LGBM consensus highlight plots.")
+
+    if lgbm_ids:
+        espsim_base_png = out_dir / "cheese_espsim_tsne_lgbm.png"
+        _plot_tsne(
+            blind_xy=blind_xy,
+            known_inactive_xy=known_inactive_xy,
+            known_active_xy=known_active_xy,
+            out_path=espsim_base_png,
+            title="CHEESE ESPSIM t-SNE (blind set vs known actives/inactives)",
+            dpi=int(args.dpi),
+        )
+        print(f"Wrote: {espsim_base_png}")
+
+        espsim_lgbm_overlay_png = out_dir / "cheese_espsim_tsne_lgbm_highlight.png"
+        m_lgbm = _mask_for_highlights(blind_compound_ids, lgbm_ids, label="ESPSIM/LGBM")
+        _plot_tsne(
+            blind_xy=blind_xy,
+            known_inactive_xy=known_inactive_xy,
+            known_active_xy=known_active_xy,
+            out_path=espsim_lgbm_overlay_png,
+            title="CHEESE ESPSIM t-SNE (blind vs known) + LGBM CHEESE consensus",
+            dpi=int(args.dpi),
+            highlight_xy=blind_xy[m_lgbm, :],
+            highlight_label=f"LGBM CHEESE consensus (n={int(m_lgbm.sum())})",
+        )
+        print(f"Wrote: {espsim_lgbm_overlay_png}")
 
     # (a, comparison) ShapeSim-embedding t-SNE (base + overlay)
     shapesim_blind = np.load(Path(args.shapesim_blind_npz), allow_pickle=True)
@@ -426,6 +477,32 @@ def main() -> int:
         highlight_label=f"CHEESE ShapeSim top-100 (n={int(m_highlight.sum())})",
     )
     print(f"Wrote: {morgan_overlay_png}")
+
+    if lgbm_ids:
+        morgan_base_lgbm_png = out_dir / f"morgan_r{int(args.morgan_radius)}_b{int(args.morgan_nbits)}_tsne_lgbm.png"
+        _plot_tsne(
+            blind_xy=m_blind_xy,
+            known_inactive_xy=m_inactive_xy,
+            known_active_xy=m_active_xy,
+            out_path=morgan_base_lgbm_png,
+            title=f"Morgan r={int(args.morgan_radius)} b={int(args.morgan_nbits)} t-SNE (blind set vs known actives/inactives)",
+            dpi=int(args.dpi),
+        )
+        print(f"Wrote: {morgan_base_lgbm_png}")
+
+        morgan_lgbm_overlay_png = out_dir / f"morgan_r{int(args.morgan_radius)}_b{int(args.morgan_nbits)}_tsne_lgbm_highlight.png"
+        m_lgbm = _mask_for_highlights(morgan_blind_ids, lgbm_ids, label="Morgan/LGBM")
+        _plot_tsne(
+            blind_xy=m_blind_xy,
+            known_inactive_xy=m_inactive_xy,
+            known_active_xy=m_active_xy,
+            out_path=morgan_lgbm_overlay_png,
+            title=f"Morgan r={int(args.morgan_radius)} b={int(args.morgan_nbits)} t-SNE (blind vs known) + LGBM CHEESE consensus",
+            dpi=int(args.dpi),
+            highlight_xy=m_blind_xy[m_lgbm, :],
+            highlight_label=f"LGBM CHEESE consensus (n={int(m_lgbm.sum())})",
+        )
+        print(f"Wrote: {morgan_lgbm_overlay_png}")
 
     # (b) SDF selection
     out_sdf = out_dir / "cheese_shapesim_top100_meancos.sdf"

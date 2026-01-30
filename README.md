@@ -69,3 +69,18 @@ Ensembles (ESPSIM + ShapeSim mean-cos):
 - Random selection: 0.07 hit rate
 - CHEESE maxcos: 0.2 hit rate
 - CHEESE meancos: 0.4 hit rate
+
+## Final submission results
+
+| Submission ID | Score | Private Note | Submission file |
+| ---: | ---: | --- | --- |
+| 1 | 0.07 | Random Baseline / Test Submission | [9add_2026_screening_challenge/submissions/random_baseline_seed_920261.txt](submissions/random_baseline_seed_920261.txt) |
+| 2 | 0.67 | LGBM+CHEESE consensus | [9add_2026_screening_challenge/submissions/lgbm_cheese_consensus.txt](submissions/lgbm_cheese_consensus.txt) |
+| 3 | 0.2 | cheese_espsim_top100_maxcos | [9add_2026_screening_challenge/submissions/cheese_espsim_top100_maxcos.txt](submissions/cheese_espsim_top100_maxcos.txt) |
+| 4 | 0.4 | cheese_espsim_top100_meancos | [9add_2026_screening_challenge/submissions/cheese_espsim_top100_meancos.txt](submissions/cheese_espsim_top100_meancos.txt) |
+| 5 | 0.53 | cheese_shapesim_top100_meancos | [9add_2026_screening_challenge/submissions/cheese_shapesim_top100_meancos.txt](submissions/cheese_shapesim_top100_meancos.txt) |
+| 6 | 0.07 | Mean Tanimoto | [9add_2026_screening_challenge/submissions/morgan_r2_b2048_top100_meantanimo.txt](submissions/morgan_r2_b2048_top100_meantanimo.txt) |
+| 7 | 0.47 | Mean Rank ESP + Shapesim | [9add_2026_screening_challenge/submissions/ensemble_espsim_shapesim_top100_meanrank.txt](submissions/ensemble_espsim_shapesim_top100_meanrank.txt) |
+| 8 | 0.47 | Voting ensemble ESP + Shapesim | [9add_2026_screening_challenge/submissions/ensemble_espsim_shapesim_top100_voting.txt](submissions/ensemble_espsim_shapesim_top100_voting.txt) |
+| 9 | 0 | Glide Docking top100 | [9add_2026_screening_challenge/submissions/glide_top100_IDs.txt](submissions/glide_top100_IDs.txt) |
+| 10 | 0.33 | LGBM | _N/A (submission file not in repo)_ |
