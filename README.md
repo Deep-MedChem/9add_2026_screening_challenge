@@ -41,3 +41,31 @@ The provided docking grid is centered on the reference ligand **AZ191** (with an
 
 ### Note on `chembl_all_class.zip`
 - `data/chembl_all_class.zip` is **not** a valid zip in this repo (it’s an HTML document). The actual `chembl_all_class.smi/.sdf` are inside `data/known_compounds.zip`.
+
+## CHEESE (ESPSIM) similarity baselines
+
+This repo includes a small script to embed SMILES with the local CHEESE ESPSIM model and rank the blind set by cosine similarity to the **known actives**.
+
+Run:
+- `python 9add_2026_screening_challenge/scripts/cheese_espsim_rank.py --device cpu`
+
+Outputs:
+- `9add_2026_screening_challenge/submissions/cheese_espsim_top100_maxcos.txt:1` (top-100 by **max** cosine similarity to any active)
+- `9add_2026_screening_challenge/submissions/cheese_espsim_top100_meancos.txt:1` (top-100 by **mean** cosine similarity to actives)
+- `9add_2026_screening_challenge/outputs/cheese_espsim_blind_scores.csv:1` (all blind compounds scored)
+- `9add_2026_screening_challenge/embeddings/cheese_espsim_blind_set.npz:1` / `9add_2026_screening_challenge/embeddings/cheese_espsim_known_all_class.npz:1` (saved embeddings)
+
+Additional baselines:
+- CHEESE ShapeSim (mean-cosine): `9add_2026_screening_challenge/submissions/cheese_shapesim_top100_meancos.txt:1`
+- Morgan fingerprints (mean Tanimoto to actives): `9add_2026_screening_challenge/submissions/morgan_r2_b2048_top100_meantanimo.txt:1`
+
+Ensembles (ESPSIM + ShapeSim mean-cos):
+- Mean-rank ensemble: `9add_2026_screening_challenge/submissions/ensemble_espsim_shapesim_top100_meanrank.txt:1`
+- Weighted-rank ensemble (ShapeSim weighted higher): `9add_2026_screening_challenge/submissions/ensemble_espsim_shapesim_top100_weightedrank_wshape0.53_wesp0.4.txt:1`
+- Voting ensemble (union of top-100 lists): `9add_2026_screening_challenge/submissions/ensemble_espsim_shapesim_top100_voting.txt:1`
+
+
+## Results of submitted baselines
+- Random selection: 0.07 hit rate
+- CHEESE maxcos: 0.2 hit rate
+- CHEESE meancos: 0.4 hit rate
