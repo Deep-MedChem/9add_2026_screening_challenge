@@ -65,6 +65,49 @@ Ensembles (ESPSIM + ShapeSim mean-cos):
 - Voting ensemble (union of top-100 lists): `9add_2026_screening_challenge/submissions/ensemble_espsim_shapesim_top100_voting.txt:1`
 
 
+## Hosted CHEESE REAL searches
+
+The resumable Jobs API workflow searches ENAMINE-REAL using ESP and shape similarity,
+with `accurate` quality and 1,000 neighbors per input molecule. It requires Python
+with `requests` and RDKit, plus tmux for the launchers. Authentication uses
+`CHEESE_API_KEY` from the environment, or the configured 1Password credential via
+`with-keyring --profile personal op read`.
+
+From this repository directory, launch the October Enamine search with:
+
+```bash
+bash scripts/start_cheese_enamine_tmux.sh
+tmux attach -t cheese-enamine-oct2026
+```
+
+This uses `data/enamine_all_r0_top100_oct2026.smi`, stores resumable state under
+`results/cheese_enamine_all_r0_top100_oct2026_run/`, and automatically validates and
+exports `results/cheese_enamine_all_r0_top100_oct2026.zip` after success. The archive
+contains two gzipped CSVs, the original input, and an `INFO.md`. The run directory's
+`exit_code` records the combined search/export outcome (zero means success).
+
+Check progress without attaching:
+
+```bash
+python scripts/search_cheese_real.py --out results/cheese_enamine_all_r0_top100_oct2026_run --status
+```
+
+To resume an interrupted run directly, including automatic export:
+
+```bash
+bash scripts/start_cheese_enamine_tmux.sh --worker
+```
+
+The September ChEMBL launcher is `bash scripts/start_cheese_real_tmux.sh`; it uses
+`data/chembl33_all_r0_top100_sep2026.smi` and writes directly under `results/`.
+For other inputs, use `scripts/search_cheese_real.py --input PATH --out DIRECTORY`
+with a separate output directory for each input/settings combination. The standalone
+packager accepts `scripts/export_cheese_search.py --run DIRECTORY --input PATH
+--package PACKAGE_DIRECTORY` and creates `PACKAGE_DIRECTORY.zip`.
+
+Small query inputs are versioned. Generated search payloads, checkpoints, logs,
+and delivery archives under `results/` are ignored by Git.
+
 ## Results of submitted baselines
 - Random selection: 0.07 hit rate
 - CHEESE maxcos: 0.2 hit rate

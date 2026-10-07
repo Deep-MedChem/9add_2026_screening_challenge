@@ -1,3 +1,5 @@
+# CHEESE search payloads, checkpoints, logs, and delivery archives
+/results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
